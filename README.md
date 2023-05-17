@@ -11,3 +11,6 @@ don't echo password to terminal to avoid password in history
 Make the script executable and run the script, then use a desired ssh client like termius or prompt 2.
 Press ctrl c to destroy the server.
 Select your user if you want persistance, find out using "whoami" and then edit the script to not change the password
+
+# Why SSH
+SSH is arguably faster and more secure than rdp and is more flexible aswell, though there is a debate on if to use mosh in replacement to SSH.
