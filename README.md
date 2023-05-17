@@ -6,3 +6,4 @@ Add Logging
 
 # How To Use?
 Make the script executable and run the script, then use a desired ssh client like termius.
+Press ctrl c to destroy the server.
