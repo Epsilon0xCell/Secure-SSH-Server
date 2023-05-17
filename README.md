@@ -6,6 +6,7 @@ Add Logging of all commands
 Blacklist IP after many failed attempts for 1 hour
 Restrict SSH server within wifi network
 don't echo password to terminal to avoid password in history
+add a persistant folder between two users so you can keep what happens in ssh session
 
 # How To Use?
 Make the script executable and run the script, then use a desired ssh client like termius or prompt 2.
