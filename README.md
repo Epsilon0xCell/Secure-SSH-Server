@@ -9,3 +9,4 @@ Restrict SSH server within wifi network
 # How To Use?
 Make the script executable and run the script, then use a desired ssh client like termius.
 Press ctrl c to destroy the server.
+Select your user if you want persistance, find out using "whoami" and then edit the script to not change the password
