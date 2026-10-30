@@ -1,17 +1,48 @@
+![banner](assets/banner.png)
+
 # Secure-SSH-Server
-This SSH server is designed to be easy-to-deploy on arch linux, secure and temporary.
 
-# Todo:
-Add Logging of all commands
-Blacklist IP after many failed attempts for 1 hour
-Restrict SSH server within wifi network
-don't echo password to terminal to avoid password in history
-add a persistant folder between two users so you can keep what happens in ssh session
+This SSH server is designed to be easy to deploy on Arch Linux, secure, and temporary.
 
-# How To Use?
-Make the script executable and run the script, then use a desired ssh client like termius or prompt 2.
-Press ctrl c to destroy the server.
-Select your user if you want persistance, find out using "whoami" and then edit the script to not change the password
+Running `ssh.sh` sets up a short lived SSH server with a hardened configuration, one new user, and a generated random password. Pressing Ctrl+C tears it back down.
 
-# Why SSH
-SSH is arguably faster and more secure than rdp and is more flexible aswell, though there is a debate on if to use mosh in replacement to SSH.
+## What the script does
+
+1. Prompts for a port (default: 25) and a username, and validates both before using them. The port must be a number from 1 to 65535, and the username must be a valid Linux style username (lowercase letters, digits, `-` and `_`, starting with a letter or `_`). Invalid input stops the script with an error.
+2. Installs `openssh` with pacman if it is not already installed.
+3. Creates the user and sets a random password generated with `openssl rand -base64 12`.
+4. Backs up the existing server configuration to `/etc/ssh/sshd_config.bak`, then replaces `/etc/ssh/sshd_config` with a hardened configuration: root login disabled, password authentication enabled for the new user, empty passwords refused, forwarding and X11 disabled, `MaxAuthTries 3`, `MaxSessions 3`, a 30 second login grace time, and a restricted cipher and MAC list.
+5. Restarts and enables the `sshd` service.
+6. Prints the connection information: server IP addresses (loopback excluded), port, username, and the generated password.
+7. Waits until it is interrupted. On Ctrl+C (SIGINT) or SIGTERM it kills the user's sessions, deletes the user and its home directory, stops `sshd`, and restores the backed up `/etc/ssh/sshd_config`.
+
+## Requirements
+
+- Arch Linux (the script uses `pacman`, `systemctl`, and `useradd`)
+- `sudo` access
+- `openssl` and the `ip` command (from `iproute2`)
+
+## How to use
+
+Make the script executable and run it, then connect with any SSH client, such as Termius or Prompt 2, using the printed address, port, username, and password.
+
+```
+chmod +x ssh.sh
+./ssh.sh
+```
+
+Press Ctrl+C to destroy the server.
+
+If you want persistence instead, pick your existing user: find its name with `whoami` and edit the script so it does not create the user or change the password. That manual route is not the default flow above, and the cleanup step deletes the user the script created, so do not point the unedited script at an account you want to keep.
+
+## Todo
+
+- Add logging of all commands
+- Blacklist an IP after many failed attempts for 1 hour
+- Restrict the SSH server to within the WiFi network
+- Do not echo the password to the terminal, to avoid the password ending up in history (the password is currently printed on purpose, because the person connecting needs it)
+- Add a persistent folder between two users so you can keep what happens in an SSH session
+
+## Why SSH
+
+SSH is arguably faster and more secure than RDP and is more flexible as well, though there is a debate on whether to use Mosh in replacement to SSH.
