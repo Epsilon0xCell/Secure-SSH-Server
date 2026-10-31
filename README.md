@@ -14,7 +14,33 @@ Running `ssh.sh` sets up a short lived SSH server with a hardened configuration,
 4. Backs up the existing server configuration to `/etc/ssh/sshd_config.bak`, then replaces `/etc/ssh/sshd_config` with a hardened configuration: root login disabled, password authentication enabled for the new user, empty passwords refused, forwarding and X11 disabled, `MaxAuthTries 3`, `MaxSessions 3`, a 30 second login grace time, and a restricted cipher and MAC list.
 5. Restarts and enables the `sshd` service.
 6. Prints the connection information: server IP addresses (loopback excluded), port, username, and the generated password.
-7. Waits until it is interrupted. On Ctrl+C (SIGINT) or SIGTERM it kills the user's sessions, deletes the user and its home directory, stops `sshd`, and restores the backed up `/etc/ssh/sshd_config`.
+7. Waits until it is interrupted. On Ctrl+C (SIGINT) or SIGTERM it kills the user's sessions, deletes the user and its home directory, stops and disables `sshd`, and restores the backed up `/etc/ssh/sshd_config`.
+
+Details that changed in the completion pass, each one a fix for a
+weakness the security audit had listed in this script's own terms:
+
+- The cleanup trap is registered before anything changes the machine,
+  and cleanup only undoes the stages that actually completed, so an
+  early interrupt no longer leaves a user or a replaced config behind.
+- A username that already belongs to an account on the machine is
+  refused up front. Before, the script changed that account's
+  password and cleanup deleted the account.
+- The new configuration is checked with `sshd -t` before the restart.
+  If it fails, the backup goes back and the script stops, with sshd
+  still running its previous configuration.
+- A rerun keeps an existing `/etc/ssh/sshd_config.bak` instead of
+  copying the hardened config over the only copy of the original.
+- Cleanup disables sshd as well as stopping it, so a reboot after
+  cleanup does not bring the temporary server back.
+- The username check also caps the name at 32 characters, and a
+  failed install, user creation, or password step stops the script
+  instead of ending at the success message anyway.
+
+The script was not run end to end in this pass: it needs an Arch
+Linux machine with sudo, and this pass ran on a Linux test host
+without one. What is verified is `bash -n` and the static checks in
+`test_ssh_static.py` (`python3 -m unittest`), which confirm the fixes
+above are present and in the right order.
 
 ## Requirements
 

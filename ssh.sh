@@ -5,6 +5,53 @@
 # is supposed to undo both. If I change one side I have to check the
 # other, because a setup step with no cleanup step leaves the machine
 # changed after I said the server was temporary.
+#
+# This script needs root level changes (useradd, /etc/ssh, systemctl),
+# so it only runs for real on an Arch Linux machine with sudo. On any
+# other host the honest checks are bash -n and the static tests in
+# test_ssh_static.py, and that is all I claim for them.
+
+# State flags for cleanup. Setup changes the machine in stages, and
+# cleanup should undo only the stages that actually happened: deleting
+# a user this script did not create, or restoring a backup that does
+# not exist, would do damage in the name of tidying up.
+user_created=0
+config_backed_up=0
+username=""
+port=""
+
+# Function to terminate SSH server and exit script
+# The order in this function is the teardown order: the user
+# sessions end first, then the user goes, then the service stops and
+# is disabled, then the config file comes back. The restore does not
+# restart sshd, because the service was just stopped and disabled on
+# purpose. The restored config takes effect the next time sshd is
+# enabled and started by hand.
+cleanup() {
+    if [ "$user_created" -eq 1 ]; then
+        sudo pkill -u "$username" 2>/dev/null
+        sudo userdel -r "$username"
+    fi
+    # Disable as well as stop. The setup enables sshd at boot, and the
+    # first version of cleanup only stopped it, so a reboot after
+    # cleanup brought sshd back under the restored config and the
+    # "temporary" server was not temporary.
+    sudo systemctl disable --now sshd 2>/dev/null || sudo systemctl stop sshd
+    # Restore the SSH server configuration that was backed up at setup
+    if [ "$config_backed_up" -eq 1 ] && [ -f /etc/ssh/sshd_config.bak ]; then
+        sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config
+    fi
+    echo "SSH server terminated"
+    exit 0
+}
+
+# Register the cleanup function before anything changes the machine.
+# The first version set this trap near the bottom, after install, user
+# creation, and the config write, so an interrupt during those steps
+# landed before any trap existed and left the new user or the replaced
+# config behind. The state flags above are what make an early trap
+# safe: before stage one completes, cleanup has nothing to undo.
+trap cleanup INT TERM
 
 # Generate a random password
 # I make the password before the prompts so the value exists by the
@@ -12,11 +59,14 @@
 # base64 encoded, so what gets printed later is longer than 12
 # characters. I store it in no file. The printout at the end is the
 # only copy, and closing the terminal before connecting loses it.
-# Nothing here checks that openssl succeeded.
 password=$(openssl rand -base64 12)
+if [ -z "$password" ]; then
+    echo "Error: openssl failed to generate a password." >&2
+    exit 1
+fi
 
 # Prompt for server port and username
-# we use a different port default to mitigate attack surface.
+# I use a different port default to mitigate attack surface.
 read -p "Enter the server port (default: 25): " port
 port=${port:-25}
 read -p "Enter the username for SSH access: " username
@@ -25,51 +75,76 @@ read -p "Enter the username for SSH access: " username
 # runs a mail server this default can collide instead of working.
 
 # Validate the port and username before either is used in a command or
-# written into the SSH server configuration
+# written into the SSH server configuration. This is the only prompt
+# path in the script, and every later use reads these same two
+# variables, so validating here covers every path the values can take.
 # I do this check before sudo, pacman, or any file write. Once the
 # port reaches the heredoc below it becomes a line in sshd_config,
 # and once the username reaches useradd a bad value is harder to
-# take back than a rejected prompt.
-# The username pattern has no length limit. A very long name passes
-# here and can still fail at useradd further down, and this script
-# keeps going after that failure.
+# take back than a rejected prompt. The username pattern also gets a
+# length cap here: the first version had none, and a very long name
+# passed the pattern and then failed at useradd, after which the
+# script kept going.
 if ! [[ "$port" =~ ^[0-9]+$ ]] || [ "$port" -lt 1 ] || [ "$port" -gt 65535 ]; then
     echo "Error: port must be a number between 1 and 65535."
     exit 1
 fi
-if ! [[ "$username" =~ ^[a-z_][a-z0-9_-]*$ ]]; then
-    echo "Error: username must start with a lowercase letter or underscore and contain only lowercase letters, digits, '-' and '_'."
+if ! [[ "$username" =~ ^[a-z_][a-z0-9_-]*$ ]] || [ "${#username}" -gt 32 ]; then
+    echo "Error: username must start with a lowercase letter or underscore, contain only lowercase letters, digits, '-' and '_', and be at most 32 characters."
+    exit 1
+fi
+
+# Refuse a name that already belongs to an account on this machine.
+# The first version went ahead when useradd failed on an existing
+# name: the password step then changed that existing account's
+# password, and cleanup deleted the account. Checking first turns
+# that whole class of accident into one clear refusal.
+if id "$username" >/dev/null 2>&1; then
+    echo "Error: user '$username' already exists. Pick a name made up for this server."
     exit 1
 fi
 
 # Install required packages
 # Use -S instead of -Sy so the package database is not refreshed on its own,
-# which would leave the system in a partial upgrade state
-# There is no set -e in this script, and I did not add one. If this
-# install fails, the lines below still run, and the script can still
-# print that setup is complete at the end. I read a success message
-# from this script as a claim to check, not as proof.
-sudo pacman -S --needed openssh
+# which would leave the system in a partial upgrade state.
+# If the install fails there is no sshd to configure, so I stop here
+# instead of letting the success message at the end claim otherwise.
+if ! sudo pacman -S --needed openssh; then
+    echo "Error: installing openssh failed." >&2
+    exit 1
+fi
 
 # Create a new user
 # -m makes the home directory that cleanup later deletes with
-# userdel -r. If the name already exists on the machine, useradd
-# fails, the password step below then changes that existing
-# account password, and cleanup deletes the account. I only run
-# this with a name I made up for this server.
-sudo useradd -m -s /bin/bash "$username"
+# userdel -r.
+if ! sudo useradd -m -s /bin/bash "$username"; then
+    echo "Error: creating user '$username' failed." >&2
+    exit 1
+fi
+user_created=1
 
 # Set the generated password for the user
 # I pipe the same value twice because passwd asks for the new
 # password twice. The output goes to /dev/null so passwd chatter
 # does not mix with the connection details I print at the end.
-echo -e "$password\n$password" | sudo passwd "$username" > /dev/null
+if ! echo -e "$password\n$password" | sudo passwd "$username" > /dev/null; then
+    echo "Error: setting the password failed." >&2
+    cleanup
+fi
 
 # Backup the SSH server configuration
-# This backup is the only copy cleanup can restore from. If I run
-# the script a second time, this line copies my hardened config
-# over the backup, and the config from before the first run is gone.
-sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+# This backup is the only copy cleanup can restore from. A second run
+# must not overwrite it: the first version copied the already
+# hardened config over the backup on a rerun, and the config from
+# before the first run was gone. If a backup already exists, I keep
+# it and say so.
+if [ -f /etc/ssh/sshd_config.bak ]; then
+    echo "Keeping the existing /etc/ssh/sshd_config.bak from an earlier run."
+    config_backed_up=1
+else
+    sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+    config_backed_up=1
+fi
 
 # Update the SSH server configuration
 # The heredoc marker is unquoted, on purpose and with a risk: $port
@@ -113,45 +188,32 @@ MACs hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,umac-128-etm@op
 
 EOT
 
-# Nothing here runs sshd -t on the new file before the restart. If
+# Validate the new configuration before restarting sshd with it. If
 # a line in the block above is wrong for the OpenSSH version on the
-# machine, the restart below is the first place that shows up.
-
-# Restart the SSH service
-sudo systemctl restart sshd
-
-# Enable and start the SSH service on boot
-# Enable is a separate promise from restart. It makes sshd start at
-# boot, and cleanup stops the service but never disables it, so a
-# reboot after cleanup brings sshd back under the restored config.
-sudo systemctl enable sshd
-
-# Function to terminate SSH server and exit script
-# The order in this function is the teardown order: the user
-# sessions end first, then the user goes, then the service stops,
-# then the config file comes back. The restore does not restart
-# sshd, because the service was just stopped on purpose. The
-# restored config takes effect the next time sshd starts.
-function cleanup {
-    sudo pkill -u "$username"
-    sudo userdel -r "$username"
-    sudo systemctl stop sshd
-    # Restore the SSH server configuration that was backed up at setup
+# machine, restarting first would take the running server down with a
+# broken config. On a validation failure I put the backup back and
+# stop, with sshd still running its previous configuration.
+if ! sudo sshd -t; then
+    echo "Error: the new sshd_config did not pass sshd -t. Restoring the backup." >&2
     if [ -f /etc/ssh/sshd_config.bak ]; then
         sudo cp /etc/ssh/sshd_config.bak /etc/ssh/sshd_config
     fi
-    echo "SSH server terminated"
-    # This exit takes the status of the echo above. A caller that
-    # checks $? cannot tell a clean teardown from a failed one.
-    exit
-}
+    exit 1
+fi
 
-# Register the cleanup function to be called when script is interrupted with Ctrl+C
-# I set the trap here, not at the top, and that placement leaves a
-# hole. An interrupt during install, user creation, or the config
-# write above lands before any trap exists, so cleanup cannot run
-# and the new user or the replaced config can be left behind.
-trap cleanup INT TERM
+# Restart the SSH service
+if ! sudo systemctl restart sshd; then
+    echo "Error: restarting sshd failed." >&2
+    exit 1
+fi
+
+# Enable and start the SSH service on boot
+# Enable is a separate promise from restart. It makes sshd start at
+# boot, and cleanup now disables it again, so the pair matches.
+if ! sudo systemctl enable sshd; then
+    echo "Error: enabling sshd failed." >&2
+    exit 1
+fi
 
 # Get the server IP address, skipping the loopback address
 # This collects every inet address on the machine, not just one a
