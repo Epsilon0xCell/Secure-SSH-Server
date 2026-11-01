@@ -3,162 +3,58 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Secure SSH Server: what it is, how it runs, where it stops</title>
-<meta name="description" content="Secure SSH Server is one of my projects. The README in the repo is short, so this page sticks to what the files themselves show.">
+<title>Secure-SSH-Server: The House Floors</title>
+<meta name="description" content="ssh.sh sets up a temporary hardened SSH server on Arch Linux: one created user, a generated password, the original sshd_config restored at teardown, and the user deleted.">
 <style>
-:root {
-  --bg: #0e2a22; --panel: #14382d; --ink: #eef0e2;
-  --mut: #1b4b3c;
-  --acc: #f4d06f; --acc2: #ec8a7a;
-  --line: #14382d;
-}
-* { box-sizing: border-box; }
-body { margin: 0; background: var(--bg); color: var(--ink);
-  font-family: Verdana, Geneva, sans-serif; line-height: 1.55; }
-code, pre, .mono { font-family: 'Lucida Console', monospace; }
-a { color: var(--acc2); }
-.hero { padding: 3rem 6vw 1rem; }
-.hero img.banner { width: 100%; height: auto; border: 1px solid var(--line);
-  border-radius: 10px; }
-.logo { width: 92px; height: 92px; border-radius: 18px;
-  border: 1px solid var(--line); }
-h1 { font-size: 2.4rem; margin: 0.4em 0 0.1em; }
-h2 { border-bottom: 2px solid var(--acc); padding-bottom: 0.2em;
-  margin-top: 2em; }
-.lede { font-size: 1.15rem; max-width: 62ch; }
-main { padding: 0 6vw 3rem; max-width: 1180px; margin: 0 auto; }
-.grid { display: grid; gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
-.card { background: var(--panel); border: 1px solid var(--line);
-  border-radius: 12px; padding: 1rem 1.2rem; }
-.card.pop { animation: rise 0.7s ease both; }
-@keyframes rise { from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: none; } }
-pre.code { background: #101014; color: #e8e6df; padding: 1rem 1.2rem;
-  border-radius: 12px; overflow-x: auto; font-size: 0.86rem;
-  border-left: 5px solid var(--acc); }
-table { border-collapse: collapse; width: 100%; }
-td, th { border-bottom: 1px solid var(--line); padding: 0.45rem 0.6rem;
-  text-align: left; }
-.shots { display: grid; gap: 1rem;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
-.shots img { width: 100%; height: auto; border: 1px solid var(--line);
-  border-radius: 10px; background: #f4f1e8; }
-footer { padding: 2rem 6vw; border-top: 1px solid var(--line);
-  color: var(--mut); }
-.rail { display: flex; gap: 1.2rem; align-items: flex-start; }
-.rail nav { position: sticky; top: 1rem; min-width: 180px; }
-@media (max-width: 760px) { .rail { flex-direction: column; }
-  .rail nav { position: static; } }
-@media (prefers-reduced-motion: reduce) {
-  .card.pop { animation: none; } * { scroll-behavior: auto; } }
+@font-face{font-family:'Anek Odia';src:url('fonts/AnekOdia.ttf') format('truetype');}
+@font-face{font-family:'Archivo';src:url('fonts/Archivo.ttf') format('truetype');}
+:root{--green:#122a1e;--white:#eeece2;--copper:#c4783e;--herb:#5f9253;--red:#a82c28;--ink:#1d2b20}
+*{box-sizing:border-box} body{margin:0;background:var(--green);color:var(--white);font-family:'Archivo',sans-serif;line-height:1.7}
+h1,h2{font-family:'Anek Odia',sans-serif;color:var(--ink)}
+.hero{padding:2rem 6vw 1rem;max-width:1000px;margin:0 auto}.hero h1{color:var(--white)}.hero img.banner{width:100%;height:auto}
+.logo{width:92px;height:92px}
+main{padding:0 6vw 3rem;max-width:1000px;margin:0 auto}
+.floor{background:var(--white);color:var(--ink);padding:1.2rem 1.5rem;margin:1.4rem 0;position:relative;box-shadow:inset 0 0 0 2px #d8d2c2,inset 0 0 0 5px var(--white),inset 0 0 0 6px #b9b2a0}
+.floor:before{content:'';position:absolute;top:8px;left:50%;width:44px;height:8px;margin-left:-22px;border:2px solid var(--copper);border-bottom:none}
+.fnum{position:absolute;top:10px;right:16px;background:var(--copper);color:#fff;font-family:'Anek Odia',sans-serif;padding:.05rem .5rem}
+.reg{color:#33512f;margin:.25rem 0}
+.hatch{display:inline-block;background:var(--white);color:var(--green);font-family:'Anek Odia',sans-serif;text-decoration:none;padding:.55rem 2rem .55rem 1rem;border:2px solid var(--copper);position:relative;margin:.3rem .3rem .3rem 0}
+.hatch:after{content:'';position:absolute;right:9px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#e8c9a8;border:2px solid var(--copper)}
+.hatch:hover{box-shadow:inset -8px 0 0 rgba(255,196,110,.55)}
+.hatch:active{transform:rotate(-1.2deg)}
+.hatch:focus-visible{outline:2px solid var(--copper);outline-offset:4px;box-shadow:0 0 0 7px var(--green),0 0 0 9px var(--copper)}
+a{color:var(--herb)} a .knot{display:inline-block;margin-right:.35em;transition:transform .2s}
+a:hover .knot{transform:scale(.8)}
+a:active{color:var(--red)}
+.hero a.hatch{color:var(--green)}
+code{background:rgba(196,120,62,.16);padding:.05rem .3rem}
+pre{background:#fffef6;padding:1rem;overflow-x:auto;border:1px solid var(--copper)}
+.warn{border:2px solid var(--red);background:#fdf1ec;padding:.7rem 1rem;max-width:38rem}
+.note{background:#fffef6;border:1px solid var(--copper);padding:.7rem 1rem;max-width:34rem;position:relative}
+.note:before{content:'';position:absolute;top:-7px;left:12px;width:12px;height:12px;border:2px solid var(--copper);border-radius:50%;background:var(--white)}
+.rope{margin:1.8rem auto;text-align:center}
+.small{font-size:.9rem}
+footer{padding:2rem 6vw}
 </style>
 </head>
-<body class="layout-poster">
-<!-- This page exists for Secure-SSH-Server alone: the layout (poster),
-     the colors, and the type were picked for this project, not
-     shared with the other project pages. The code block below is
-     copied from the file it names, line for line. If it looks
-     plain, that is because the project is plain, and I would
-     rather the page match the project than dress it up. The one
-     thing I will not do here is oversell: what this project does
-     not do is stated on the page, not hidden from it. -->
+<body>
 <header class="hero">
-  <img class="logo" src="assets/logo.png" alt="Secure SSH Server logo">
-  <img class="banner" src="assets/banner.png" alt="">
-  <h1>Secure SSH Server</h1>
-  <p class="mono"><a href="https://github.com/Epsilon0xCell/Secure-SSH-Server">github.com/Epsilon0xCell/Secure-SSH-Server</a></p>
+<img class="logo" src="assets/logo.png" alt="Copper pulley wheel in an iron bracket, a rope over it holding a small slatted car">
+<img class="banner" src="assets/banner.png" alt="Cutaway of a tall house with a dumbwaiter shaft down the middle, the chalk delivery board carrying the project name">
+<h1>Secure-SSH-Server</h1>
+<p>The house floor plan crossed with a delivery register. Ride the car upward through what <code>ssh.sh</code> actually does on an Arch Linux machine, one panel per floor.</p>
+<p><a class="hatch" href="https://github.com/Epsilon0xCell/Secure-SSH-Server">Open the repo</a> <a class="hatch" href="#backstairs">The return trip</a></p>
 </header>
-
 <main>
-  <section class="rail">
-    <nav aria-label="on this page">
-      <p class="mono"><a href="#run">Run it</a><br>
-      <a href="#files">The files</a><br>
-      <a href="#sheets">The sheets</a><br>
-      <a href="https://github.com/Epsilon0xCell/Secure-SSH-Server">The repo</a></p>
-    </nav>
-    <div>
-      <p class="lede">Secure SSH Server is one of my projects. The README in the repo is short, so this page sticks to what the files themselves show.</p>
-      <div class="grid">
-        <div class="card pop"><h3>What it is</h3>
-          <p>Secure SSH Server: 3 files, 108 counted
-          lines across Shell 91, Markdown 17. One job, done in the
-          open, in files you can read.</p></div>
-        <div class="card pop"><h3>The biggest piece</h3>
-          <p><code>ssh.sh</code> carries the most
-          lines. If the project grows, that file is where the growth
-          lands first, for better or worse.</p></div>
-        <div class="card pop"><h3>The honest gap</h3>
-          <p>No test files yet. That is the honest gap, and the roadmap in the visuals folder says what the first one should cover.</p></div>
-      </div>
-      <section id="run">
-        <h2>Run it</h2>
-        <p>The repo README has the exact commands for this one. The
-        shape is the shape for most of my projects: clone it, read the
-        top file first so you know what will happen, then run it on
-        something you do not mind breaking.</p>
-        <p class="mono">$ git clone https://github.com/Epsilon0xCell/Secure-SSH-Server.git<br>$ cd Secure-SSH-Server</p>
-      </section>
-      
-  <section aria-label="real code">
-    <h2>The code, as it sits in the repo</h2>
-    <p>From <code>ssh.sh</code>, line 1 on. I did
-    not tidy it for the page. What you see is what the file has.</p>
-    <pre class="code"><code>#!/bin/bash
-
-# Generate a random password
-password=$(openssl rand -base64 12)
-
-# Prompt for server port and username
-# we use a different port default to mitigate attack surface.
-read -p &quot;Enter the server port (default: 25): &quot; port
-port=${port:-25}
-read -p &quot;Enter the username for SSH access: &quot; username
-
-# Install required packages
-sudo pacman -Sy openssh
-
-# Create a new user
-sudo useradd -m -s /bin/bash $username
-
-# Set the generated password for the user
-echo -e &quot;$password\n$password&quot; | sudo passwd $username &gt; /dev/null
-
-# Backup the SSH server configuration
-sudo cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak</code></pre>
-  </section>
-      <section id="files">
-        <h2>The files that matter</h2>
-        <table><tr><th>File</th><th>Lines</th></tr>
-        <tr><td><code>ssh.sh</code></td><td>91</td></tr>
-        <tr><td><code>README.md</code></td><td>17</td></tr>
-        <tr><td><code>LICENSE</code></td><td>0</td></tr>
-        </table>
-        <p>Names doing the work: <span class="mono">no named functions in the snapshot</span>.</p>
-      </section>
-      <section id="sheets">
-        <h2>Drawn by hand</h2>
-        <p>I sketch my projects on notebook paper so I have to
-        understand them well enough to draw them. The full set,
-        with the counts and how they were counted, is the
-        <a href="https://github.com/Epsilon0xCell/Secure-SSH-Server/tree/main/Secure-SSH-Server-Visuals">Secure-SSH-Server-Visuals</a>
-        folder in the repo. Nothing is drawn over the binder holes.
-        That is a rule, not a style.</p>
-        <div class="shots">
-          <img src="assets/architecture.png" alt="Hand drawn architecture sheet for Secure SSH Server">
-          <img src="assets/flowchart.png" alt="Hand drawn flowchart sheet for Secure SSH Server">
-          <img src="assets/product-map.png" alt="Hand drawn product map sheet for Secure SSH Server">
-        </div>
-      </section>
-    </div>
-  </section>
+<div class="rope"><svg width="900" height="20" viewBox="0 0 900 20" style="max-width:100%"><path d="M0 8 Q 450 16 900 8" stroke="#c4783e" stroke-width="3" fill="none"/><circle cx="450" cy="11" r="5" fill="none" stroke="#c4783e" stroke-width="3"/></svg></div>
+<section class="floor"><span class="fnum">G</span><h2>Ground floor: before anything leaves the kitchen</h2><pre>chmod +x ssh.sh
+./ssh.sh</pre><p class="reg">The script asks two questions: a port, with 25 offered as the default if you just press enter, and a username.</p><p class="reg">The port must be a whole number from 1 to 65535.</p><p class="reg">The username must begin with a lowercase letter or underscore, use only lowercase letters, digits, hyphens, and underscores, and run to at most 32 characters.</p><div class="warn"><p>A name that already belongs to an account on the machine is refused outright.</p></div><p class="reg">Invalid answers stop the script with an error. Nothing has been changed yet at this point.</p></section>
+<section class="floor"><span class="fnum">K</span><h2>Kitchen: loading the car</h2><p class="reg">The script installs openssh with pacman if it is missing.</p><p class="reg">It creates the user with a home directory.</p><p class="reg">It sets a password it generated itself from <code>openssl rand -base64 12</code>.</p><p class="reg">That password is stored in no file. The printed connection details at the end are its only copy.</p></section>
+<div class="rope"><svg width="300" height="14" viewBox="0 0 300 14" style="max-width:40%"><line x1="60" y1="7" x2="240" y2="7" stroke="#c4783e" stroke-width="3"/><circle cx="150" cy="7" r="5" fill="none" stroke="#c4783e" stroke-width="3"/></svg></div>
+<section class="floor"><span class="fnum">1</span><h2>First floor: locking the doors behind the cargo</h2><p class="reg">The existing <code>/etc/ssh/sshd_config</code> is copied to <code>/etc/ssh/sshd_config.bak</code>, and a hardened replacement is written.</p><div class="note"><p>Note tied to the rope: a backup left by an earlier run is kept rather than overwritten.</p></div><p class="reg">Root login refused. Password login allowed for the new user. Empty passwords refused.</p><p class="reg">Agent forwarding off. TCP forwarding off. Tunnelling off. X11 forwarding off.</p><p class="reg">MaxAuthTries 3. MaxSessions 3. Login grace time 30 seconds.</p><p class="reg">Permitted ciphers: chacha20-poly1305@openssh.com, aes256-gcm@openssh.com, aes128-gcm@openssh.com.</p><p class="reg">Permitted MACs: hmac-sha2-256-etm@openssh.com, hmac-sha2-512-etm@openssh.com, umac-128-etm@openssh.com.</p><p class="reg">The new file is tested with <code>sshd -t</code> before any restart. If it fails, the backup goes straight back and the script stops.</p></section>
+<section class="floor"><span class="fnum">2</span><h2>Top floor: arrival</h2><p class="reg">sshd is restarted and enabled.</p><p class="reg">The script prints where to connect: the machine's IP addresses with loopback left out, the chosen port, the username, and the generated password.</p><p class="reg">Any SSH client can make the connection. The README names Termius and Prompt 2.</p></section>
+<section class="floor" id="backstairs"><span class="fnum">B</span><h2>Back stairs: the return trip</h2><p class="reg">The server lives only while the script runs. Ctrl+C or SIGTERM triggers a cleanup that ends the user's sessions, deletes the user and its home directory, stops sshd and disables it so a reboot cannot revive the server, and restores the backed up sshd_config.</p><div class="warn"><p>Cleanup deletes the user the script created, so do not point the unedited script at an account worth keeping.</p></div><p class="reg">Requirements: Arch Linux, sudo, openssl, and the ip command from iproute2.</p><p class="small">Verification for the script is <code>bash -n</code> plus the static checks in <code>test_ssh_static.py</code> run under <code>python3 -m unittest</code>, since the script itself needs an Arch machine with sudo to run for real.</p><p><a href="https://github.com/Epsilon0xCell/Secure-SSH-Server"><svg class="knot" width="13" height="13" viewBox="0 0 13 13"><circle cx="6.5" cy="6.5" r="4.5" fill="none" stroke="#c4783e" stroke-width="2"/></svg>Read ssh.sh in the repo</a></p></section>
 </main>
-<footer>
-  <p>Secure SSH Server is one of my projects. This page was written
-  from the repo itself on 2026-10-30: the counts are the
-  repo's counts, the code is the repo's code, and the gaps are the
-  repo's gaps.</p>
-</footer>
+<footer><p>Secure-SSH-Server: the guest has left, the account is deleted, the old configuration is back on the door, and the car sits empty at the hatch.</p></footer>
 </body>
 </html>
