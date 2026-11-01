@@ -1,10 +1,18 @@
-![banner](assets/banner.png)
+![Intro scenery: a lamplit kitchen, a covered dish and a blank sealed envelope on the table, the dumbwaiter car waiting in its open hatch](intro-banner.png)
 
 # Secure-SSH-Server
+
+![Wordmark banner: a cutaway house with the shaft down its middle, the chalk delivery board carrying the project name](banner.png)
+
+![Animated scene: the car travelling the shaft, steam curling in the kitchen, hatch doors opening as the car arrives](scene.svg)
+
 
 This SSH server is designed to be easy to deploy on Arch Linux, secure, and temporary.
 
 Running `ssh.sh` sets up a short lived SSH server with a hardened configuration, one new user, and a generated random password. Pressing Ctrl+C tears it back down.
+
+
+![Separator](sep-heavy.svg)
 
 ## What the script does
 
@@ -42,11 +50,17 @@ without one. What is verified is `bash -n` and the static checks in
 `test_ssh_static.py` (`python3 -m unittest`), which confirm the fixes
 above are present and in the right order.
 
+
+![Separator](sep-light.svg)
+
 ## Requirements
 
 - Arch Linux (the script uses `pacman`, `systemctl`, and `useradd`)
 - `sudo` access
 - `openssl` and the `ip` command (from `iproute2`)
+
+
+![Separator](sep-heavy.svg)
 
 ## How to use
 
@@ -61,6 +75,9 @@ Press Ctrl+C to destroy the server.
 
 If you want persistence instead, pick your existing user: find its name with `whoami` and edit the script so it does not create the user or change the password. That manual route is not the default flow above, and the cleanup step deletes the user the script created, so do not point the unedited script at an account you want to keep.
 
+
+![Separator](sep-light.svg)
+
 ## Todo
 
 - Add logging of all commands
@@ -69,6 +86,15 @@ If you want persistence instead, pick your existing user: find its name with `wh
 - Do not echo the password to the terminal, to avoid the password ending up in history (the password is currently printed on purpose, because the person connecting needs it)
 - Add a persistent folder between two users so you can keep what happens in an SSH session
 
+
+![Separator](sep-heavy.svg)
+
 ## Why SSH
 
 SSH is arguably faster and more secure than RDP and is more flexible as well, though there is a debate on whether to use Mosh in replacement to SSH.
+
+![Separator](sep-heavy.svg)
+
+> **Note tied to the rope:** a rerun keeps an existing `/etc/ssh/sshd_config.bak` instead of copying the hardened config over the only copy of the original.
+
+> **Note tied to the rope:** the cleanup step deletes the user the script created, so do not point the unedited script at an account you want to keep.

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 300" role="img" aria-label="A house slice: steam curling in the kitchen, the dumbwaiter car travelling the shaft, hatch doors opening as it arrives">
+<rect width="1200" height="300" fill="#122a1e"/>
+<rect x="0" y="0" width="470" height="300" fill="#1a3826"/>
+<rect x="60" y="196" width="330" height="16" fill="#4a3622"/>
+<ellipse cx="200" cy="188" rx="86" ry="14" fill="#c6c8ce"/>
+<path d="M126 188 A 74 44 0 0 1 274 188 Z" fill="#d2d4da"/>
+<circle cx="200" cy="140" r="6" fill="#c4783e"/>
+<g fill="#eef0ea"><circle cx="182" cy="120" r="4"><animate attributeName="cy" values="124;88" dur="5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.8;0" dur="5s" repeatCount="indefinite"/></circle><circle cx="214" cy="120" r="3"><animate attributeName="cy" values="124;94" dur="6.5s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.7;0" dur="6.5s" repeatCount="indefinite"/></circle></g>
+<circle cx="200" cy="66" r="34" fill="#ffc46e" opacity=".3"><animate attributeName="opacity" values=".22;.38;.22" dur="8s" repeatCount="indefinite"/></circle>
+<polygon points="176,44 224,44 212,20 188,20" fill="#22261f"/><circle cx="200" cy="46" r="7" fill="#ffd082"/>
+<g stroke="#c4783e" stroke-width="5"><ellipse cx="330" cy="90" rx="20" ry="20" fill="#c4783e" stroke="none"/><ellipse cx="386" cy="90" rx="17" ry="17" fill="#c4783e" stroke="none"/></g>
+<rect x="540" y="10" width="110" height="280" fill="#0a0f0a"/>
+<circle cx="595" cy="34" r="17" fill="none" stroke="#c4783e" stroke-width="6"><animateTransform attributeName="transform" type="rotate" values="0 595 34;90 595 34;90 595 34;180 595 34;180 595 34;270 595 34;270 595 34;360 595 34" dur="24s" repeatCount="indefinite"/></circle>
+<line x1="595" y1="34" x2="595" y2="70" stroke="#d8ba84" stroke-width="4"><animate attributeName="y2" values="212;62;62;212;212" keyTimes="0;.36;.5;.86;1" dur="24s" repeatCount="indefinite"/></line>
+<g><rect x="562" y="212" width="66" height="56" fill="#eeece2"/><g stroke="#78766c" stroke-width="4"><line x1="578" y1="222" x2="578" y2="258"/><line x1="595" y1="222" x2="595" y2="258"/><line x1="612" y1="222" x2="612" y2="258"/></g><animateTransform attributeName="transform" type="translate" values="0 0;0 -150;0 -150;0 0;0 0" keyTimes="0;.36;.5;.86;1" dur="24s" repeatCount="indefinite"/></g>
+<g fill="#d8d2c2"><g><rect x="730" y="216" width="54" height="64"/><animateTransform attributeName="transform" type="translate" values="0 0;7 0;7 0;0 0;0 0" keyTimes="0;.06;.2;.3;1" dur="24s" repeatCount="indefinite"/></g><g><rect x="880" y="150" width="54" height="64"/><animateTransform attributeName="transform" type="translate" values="0 0;0 0;7 0;7 0;0 0;0 0" keyTimes="0;.2;.32;.46;.58;1" dur="24s" repeatCount="indefinite"/></g><g><rect x="1030" y="84" width="54" height="64"/><animateTransform attributeName="transform" type="translate" values="0 0;0 0;7 0;7 0;0 0;0 0" keyTimes="0;.34;.44;.56;.68;1" dur="24s" repeatCount="indefinite"/></g></g>
+<g fill="#2c4634"><rect x="700" y="280" width="130" height="8"/><rect x="850" y="214" width="130" height="8"/><rect x="1000" y="148" width="130" height="8"/></g>
+</svg>
