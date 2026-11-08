@@ -1,8 +1,11 @@
-![Intro scenery: a lamplit kitchen, a covered dish and a blank sealed envelope on the table, the dumbwaiter car waiting in its open hatch](intro-banner.png)
+![Intro: the same gatehouse at dawn with the portcullis half raised, the torches out, scaffolding and dismantled timbers gathered around the entrance as the gate is packed away](intro-banner.png)
+
 
 # Secure-SSH-Server
 
-![Wordmark banner: a cutaway house with the shaft down its middle, the chalk delivery board carrying the project name](banner.png)
+<p align="center"><img src="logo.png" alt="Secure-SSH-Server logo: a black iron portcullis grid set in a stone arch, one torch flame glowing amber through the centre squares" width="200"></p>
+
+![Banner: a castle gateway at night, its black iron portcullis dropped over the arch with warm torchlight behind the grid, a small side door standing open at the right with light spilling out, and the rope and windlass above](banner.png)
 
 ![Animated scene: the car travelling the shaft, steam curling in the kitchen, hatch doors opening as the car arrives](scene.svg)
 

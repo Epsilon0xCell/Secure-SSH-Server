@@ -3,58 +3,50 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Secure-SSH-Server: The House Floors</title>
-<meta name="description" content="ssh.sh sets up a temporary hardened SSH server on Arch Linux: one created user, a generated password, the original sshd_config restored at teardown, and the user deleted.">
+<title>Secure-SSH-Server: The Portcullis Watch</title>
+<meta name="description" content="ssh.sh stands up a short lived, hardened SSH server on Arch Linux for one named guest, then tears the whole gate down again on Ctrl+C: user deleted, service stopped, original config restored.">
 <style>
-@font-face{font-family:'Anek Odia';src:url('fonts/AnekOdia.ttf') format('truetype');}
-@font-face{font-family:'Archivo';src:url('fonts/Archivo.ttf') format('truetype');}
-:root{--green:#122a1e;--white:#eeece2;--copper:#c4783e;--herb:#5f9253;--red:#a82c28;--ink:#1d2b20}
-*{box-sizing:border-box} body{margin:0;background:var(--green);color:var(--white);font-family:'Archivo',sans-serif;line-height:1.7}
-h1,h2{font-family:'Anek Odia',sans-serif;color:var(--ink)}
-.hero{padding:2rem 6vw 1rem;max-width:1000px;margin:0 auto}.hero h1{color:var(--white)}.hero img.banner{width:100%;height:auto}
-.logo{width:92px;height:92px}
-main{padding:0 6vw 3rem;max-width:1000px;margin:0 auto}
-.floor{background:var(--white);color:var(--ink);padding:1.2rem 1.5rem;margin:1.4rem 0;position:relative;box-shadow:inset 0 0 0 2px #d8d2c2,inset 0 0 0 5px var(--white),inset 0 0 0 6px #b9b2a0}
-.floor:before{content:'';position:absolute;top:8px;left:50%;width:44px;height:8px;margin-left:-22px;border:2px solid var(--copper);border-bottom:none}
-.fnum{position:absolute;top:10px;right:16px;background:var(--copper);color:#fff;font-family:'Anek Odia',sans-serif;padding:.05rem .5rem}
-.reg{color:#33512f;margin:.25rem 0}
-.hatch{display:inline-block;background:var(--white);color:var(--green);font-family:'Anek Odia',sans-serif;text-decoration:none;padding:.55rem 2rem .55rem 1rem;border:2px solid var(--copper);position:relative;margin:.3rem .3rem .3rem 0}
-.hatch:after{content:'';position:absolute;right:9px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#e8c9a8;border:2px solid var(--copper)}
-.hatch:hover{box-shadow:inset -8px 0 0 rgba(255,196,110,.55)}
-.hatch:active{transform:rotate(-1.2deg)}
-.hatch:focus-visible{outline:2px solid var(--copper);outline-offset:4px;box-shadow:0 0 0 7px var(--green),0 0 0 9px var(--copper)}
-a{color:var(--herb)} a .knot{display:inline-block;margin-right:.35em;transition:transform .2s}
-a:hover .knot{transform:scale(.8)}
-a:active{color:var(--red)}
-.hero a.hatch{color:var(--green)}
-code{background:rgba(196,120,62,.16);padding:.05rem .3rem}
-pre{background:#fffef6;padding:1rem;overflow-x:auto;border:1px solid var(--copper)}
-.warn{border:2px solid var(--red);background:#fdf1ec;padding:.7rem 1rem;max-width:38rem}
-.note{background:#fffef6;border:1px solid var(--copper);padding:.7rem 1rem;max-width:34rem;position:relative}
-.note:before{content:'';position:absolute;top:-7px;left:12px;width:12px;height:12px;border:2px solid var(--copper);border-radius:50%;background:var(--white)}
-.rope{margin:1.8rem auto;text-align:center}
-.small{font-size:.9rem}
-footer{padding:2rem 6vw}
+@font-face{font-family:'Grenze Gotisch';src:url('fonts/grenze-gotisch-600.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Grenze Gotisch';src:url('fonts/grenze-gotisch-700.woff2') format('woff2');font-weight:700}
+@font-face{font-family:'Grenze Gotisch';src:url('fonts/grenze-gotisch-800.woff2') format('woff2');font-weight:800}
+@font-face{font-family:'Spectral';src:url('fonts/spectral-400.woff2') format('woff2');font-weight:400}
+@font-face{font-family:'Spectral';src:url('fonts/spectral-600.woff2') format('woff2');font-weight:600}
+@font-face{font-family:'Spectral';src:url('fonts/spectral-700.woff2') format('woff2');font-weight:700}
+:root{--night:#101216;--gate:#1d2026;--stone:#c7ccd2;--dim:#9aa0a8;--torch:#e39a2d;--torchlt:#f4bc58;--rope:#8a6844;--ink:#e8e4da}
+*{box-sizing:border-box} body{margin:0;background:var(--night);color:var(--ink);font-family:'Spectral',serif;line-height:1.65}
+h1,h2{font-family:'Grenze Gotisch',serif;letter-spacing:.01em}
+.hero{max-width:1060px;margin:0 auto;padding:2rem 5vw 0}.hero img.frame{width:100%;height:auto;display:block;border:5px solid #000;outline:2px solid var(--rope)}
+.hero .strip{display:flex;gap:1.2rem;align-items:flex-start;margin-top:1.2rem}.hero .strip img{width:96px;height:96px}
+.hero h1{color:var(--stone);margin:.2rem 0 .4rem;font-size:2.4rem}.hero p{color:#c3bda9;max-width:46rem}
+.court{max-width:1060px;margin:1.6rem auto 3rem;padding:2rem 5vw;background:#0b0c0f}
+.barred{position:relative;background:var(--gate);border:2px solid #000;padding:1.1rem 1.4rem 1.1rem 3rem;margin:0 0 1.3rem;box-shadow:inset 0 0 0 1px #33373f}
+.barred:before{content:'';position:absolute;left:14px;top:0;bottom:0;width:9px;background:repeating-linear-gradient(to bottom,#050607 0 10px,#2a2e36 10px 12px);border-left:2px solid #050607;border-right:2px solid #050607}
+.barred h2{margin:.1rem 0 .5rem;font-size:1.6rem;color:var(--stone)}.barred p{margin:.4rem 0}.barred ul{margin:.4rem 0;padding-left:1.3rem}
+.watch{font-family:'Spectral',serif;text-transform:uppercase;letter-spacing:.16em;font-size:.72rem;font-weight:600;color:var(--torch);display:block}
+.btn{display:inline-block;background:var(--gate);color:var(--stone);font-family:'Grenze Gotisch',serif;font-size:1.05rem;text-decoration:none;padding:.5rem 1.1rem;border:2px solid #000;border-bottom:5px solid var(--torch);margin:.3rem .4rem .3rem 0}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:translateY(1px);border-bottom-color:#000}
+.btn:focus-visible{outline:2px solid var(--torchlt);outline-offset:3px}
+a{color:var(--torchlt);text-decoration:none}a:hover{text-decoration:underline}
+figure.closer{margin:.8rem 0}figure.closer img{width:100%;height:auto;display:block;border:4px solid #000}
+figure.closer figcaption{font-size:.88rem;color:var(--dim);margin-top:.35rem}
+code{background:#2a2e36;padding:.05rem .3rem;color:var(--torchlt)}
+pre{background:#050607;color:#d8d2c0;padding:.8rem 1rem;overflow-x:auto;font-size:.88rem;border:1px solid #33373f}
+footer{max-width:1060px;margin:0 auto;padding:0 5vw 2.5rem;color:#8d8570}
 </style>
 </head>
 <body>
 <header class="hero">
-<img class="logo" src="assets/logo.png" alt="Copper pulley wheel in an iron bracket, a rope over it holding a small slatted car">
-<img class="banner" src="assets/banner.png" alt="Cutaway of a tall house with a dumbwaiter shaft down the middle, the chalk delivery board carrying the project name">
-<h1>Secure-SSH-Server</h1>
-<p>The house floor plan crossed with a delivery register. Ride the car upward through what <code>ssh.sh</code> actually does on an Arch Linux machine, one panel per floor.</p>
-<p><a class="hatch" href="https://github.com/Epsilon0xCell/Secure-SSH-Server">Open the repo</a> <a class="hatch" href="#backstairs">The return trip</a></p>
+<img class="frame" src="assets/banner.png" alt="A castle gateway at night, its black iron portcullis dropped over the arch with warm torchlight behind the grid, a small side door standing open at the right with light spilling out, and the rope and windlass above">
+<div class="strip"><img src="assets/logo.png" alt="A black iron portcullis grid set in a stone arch, one torch flame glowing amber through the centre squares"><div><h1>Secure-SSH-Server</h1><p>A castle gate is heavy machinery run for a short visit: the portcullis drops, one named guest is let through the side door, and when the visit ends the gate is barred again and the guest's key handed back. <code>ssh.sh</code> does that job for an SSH server on Arch Linux. It stands a hardened server up for one run, prints the way in, and on Ctrl+C it tears the whole arrangement down: the guest account deleted, the service stopped, the original configuration restored.</p><p><a class="btn" href="https://github.com/Epsilon0xCell/Secure-SSH-Server">Open the repo</a> <a class="btn" href="#stand">Stand the watch</a></p></div></div>
 </header>
-<main>
-<div class="rope"><svg width="900" height="20" viewBox="0 0 900 20" style="max-width:100%"><path d="M0 8 Q 450 16 900 8" stroke="#c4783e" stroke-width="3" fill="none"/><circle cx="450" cy="11" r="5" fill="none" stroke="#c4783e" stroke-width="3"/></svg></div>
-<section class="floor"><span class="fnum">G</span><h2>Ground floor: before anything leaves the kitchen</h2><pre>chmod +x ssh.sh
-./ssh.sh</pre><p class="reg">The script asks two questions: a port, with 25 offered as the default if you just press enter, and a username.</p><p class="reg">The port must be a whole number from 1 to 65535.</p><p class="reg">The username must begin with a lowercase letter or underscore, use only lowercase letters, digits, hyphens, and underscores, and run to at most 32 characters.</p><div class="warn"><p>A name that already belongs to an account on the machine is refused outright.</p></div><p class="reg">Invalid answers stop the script with an error. Nothing has been changed yet at this point.</p></section>
-<section class="floor"><span class="fnum">K</span><h2>Kitchen: loading the car</h2><p class="reg">The script installs openssh with pacman if it is missing.</p><p class="reg">It creates the user with a home directory.</p><p class="reg">It sets a password it generated itself from <code>openssl rand -base64 12</code>.</p><p class="reg">That password is stored in no file. The printed connection details at the end are its only copy.</p></section>
-<div class="rope"><svg width="300" height="14" viewBox="0 0 300 14" style="max-width:40%"><line x1="60" y1="7" x2="240" y2="7" stroke="#c4783e" stroke-width="3"/><circle cx="150" cy="7" r="5" fill="none" stroke="#c4783e" stroke-width="3"/></svg></div>
-<section class="floor"><span class="fnum">1</span><h2>First floor: locking the doors behind the cargo</h2><p class="reg">The existing <code>/etc/ssh/sshd_config</code> is copied to <code>/etc/ssh/sshd_config.bak</code>, and a hardened replacement is written.</p><div class="note"><p>Note tied to the rope: a backup left by an earlier run is kept rather than overwritten.</p></div><p class="reg">Root login refused. Password login allowed for the new user. Empty passwords refused.</p><p class="reg">Agent forwarding off. TCP forwarding off. Tunnelling off. X11 forwarding off.</p><p class="reg">MaxAuthTries 3. MaxSessions 3. Login grace time 30 seconds.</p><p class="reg">Permitted ciphers: chacha20-poly1305@openssh.com, aes256-gcm@openssh.com, aes128-gcm@openssh.com.</p><p class="reg">Permitted MACs: hmac-sha2-256-etm@openssh.com, hmac-sha2-512-etm@openssh.com, umac-128-etm@openssh.com.</p><p class="reg">The new file is tested with <code>sshd -t</code> before any restart. If it fails, the backup goes straight back and the script stops.</p></section>
-<section class="floor"><span class="fnum">2</span><h2>Top floor: arrival</h2><p class="reg">sshd is restarted and enabled.</p><p class="reg">The script prints where to connect: the machine's IP addresses with loopback left out, the chosen port, the username, and the generated password.</p><p class="reg">Any SSH client can make the connection. The README names Termius and Prompt 2.</p></section>
-<section class="floor" id="backstairs"><span class="fnum">B</span><h2>Back stairs: the return trip</h2><p class="reg">The server lives only while the script runs. Ctrl+C or SIGTERM triggers a cleanup that ends the user's sessions, deletes the user and its home directory, stops sshd and disables it so a reboot cannot revive the server, and restores the backed up sshd_config.</p><div class="warn"><p>Cleanup deletes the user the script created, so do not point the unedited script at an account worth keeping.</p></div><p class="reg">Requirements: Arch Linux, sudo, openssl, and the ip command from iproute2.</p><p class="small">Verification for the script is <code>bash -n</code> plus the static checks in <code>test_ssh_static.py</code> run under <code>python3 -m unittest</code>, since the script itself needs an Arch machine with sudo to run for real.</p><p><a href="https://github.com/Epsilon0xCell/Secure-SSH-Server"><svg class="knot" width="13" height="13" viewBox="0 0 13 13"><circle cx="6.5" cy="6.5" r="4.5" fill="none" stroke="#c4783e" stroke-width="2"/></svg>Read ssh.sh in the repo</a></p></section>
+<main class="court">
+<section class="barred" id="stand"><span class="watch">First watch, raising the gate</span><h2>Stand the watch</h2><pre>chmod +x ssh.sh
+./ssh.sh</pre><p>The script needs Arch Linux and sudo, plus <code>openssl</code> and <code>ip</code> from iproute2. If <code>openssh</code> is missing it installs it with pacman. It asks two questions before anything changes:</p><ul><li><strong>A port</strong>, defaulting to 25 if you just press enter. It must be a number from 1 to 65535; anything else stops the script.</li><li><strong>A username</strong> for the one guest. Lowercase letters, digits, hyphens and underscores, starting with a letter or underscore, at most 32 characters. Naming an account that already exists on the machine is refused up front, in those words, before anything is touched.</li></ul><p>For that guest it sets a random password, <code>openssl rand -base64 12</code>, twelve bytes of openssl randomness in base64. The password is printed in the connection details at the end and stored in no file.</p></section>
+<section class="barred"><span class="watch">Second watch, barring the gate</span><h2>The hardened configuration</h2><p>Before writing anything, the script copies the existing <code>/etc/ssh/sshd_config</code> to <code>/etc/ssh/sshd_config.bak</code>; on a rerun, a backup that is already there is kept rather than overwritten with the hardened file. Then it writes a configuration that assumes the gate is the target:</p><ul><li>Root login disabled. Password authentication enabled, for the new guest.</li><li>Empty passwords refused. Agent forwarding, TCP forwarding, tunnel devices and X11 forwarding all disabled.</li><li><code>MaxAuthTries 3</code> and <code>MaxSessions 3</code>: three guesses, three sessions, no more.</li><li>A 30 second login grace time, then the door closes on anyone still fumbling.</li><li>A restricted cipher list, <code>chacha20-poly1305@openssh.com</code>, <code>aes256-gcm@openssh.com</code> and <code>aes128-gcm@openssh.com</code>, and a restricted MAC list, <code>hmac-sha2-256-etm@openssh.com</code>, <code>hmac-sha2-512-etm@openssh.com</code> and <code>umac-128-etm@openssh.com</code>.</li></ul><p>The new configuration is checked with <code>sshd -t</code> before anything restarts. If the check fails, the backup is restored and the script stops rather than leaving a broken gate.</p></section>
+<section class="barred"><span class="watch">Third watch, the guest arrives</span><h2>The way in, printed once</h2><p>With the configuration proven, sshd is restarted and enabled, and the script prints the connection details: the machine's addresses with loopback left out, the port you chose, the username, and the one time password. From there the guest comes in with any SSH client; the README names Termius on phones and tablets and Prompt 2 on iOS as the clients it had in mind. While the server stands, that printed page is the only key in the world.</p></section>
+<section class="barred"><span class="watch">Last watch, striking the gate</span><h2>Ctrl+C, and it was never there</h2><p>The cleanup trap is registered before anything changes, and it only undoes stages that actually completed, so interrupting early never tears down something the run did not build. On Ctrl+C (SIGINT) or SIGTERM it runs in order: the guest's sessions are killed, the user and home directory are deleted, sshd is stopped and disabled, and the backed up configuration is restored. The gate returns to the wall it was before the visit, and the README's own todo list (logging, an IP blacklist, a WiFi restriction, a persistent folder option) is left for a future watch.</p></section>
+<section class="barred"><span class="watch">The dawn after</span><h2>The gatehouse at first light</h2><figure class="closer"><img src="assets/intro-banner.png" alt="The same gatehouse at dawn with the portcullis half raised, the torches out, scaffolding and dismantled timbers gathered around the entrance as the gate is packed away"><figcaption>Morning: the portcullis half raised, the torches cold, the timbers coming down. The visit is over and the wall is a wall again.</figcaption></figure><p>An honest limit, stated the way the campaign's completion pass found it: the script has not been run end to end, because that needs an Arch machine and sudo. What stands behind it is a syntax pass, <code>bash -n</code>, and the static checks in <code>test_ssh_static.py</code>, run under <code>python3 -m unittest</code>, which pin the hardened configuration values and the cleanup behaviour. The design is the promise; the checks are what has been proven so far.</p></section>
 </main>
-<footer><p>Secure-SSH-Server: the guest has left, the account is deleted, the old configuration is back on the door, and the car sits empty at the hatch.</p></footer>
+<footer><p>Secure-SSH-Server: the portcullis drops for one guest, the torch burns for one watch, and by dawn there is no gate to find.</p></footer>
 </body>
 </html>
